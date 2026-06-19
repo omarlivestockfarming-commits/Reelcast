@@ -1,0 +1,11 @@
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+[dev]
+  port = 8888
+
+[[redirects]]
+  from = "/api/predict"
+  to = "/.netlify/functions/predict"
+  status = 200

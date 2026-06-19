@@ -1,0 +1,1420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ReelsCast — Reels Growth Predictor</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #1F1E1D;
+    --surface: #262524;
+    --border: #3A3837;
+    --text: #F5F1EC;
+    --text-muted: #B8B2AA;
+    --text-faint: #8A8479;
+    --accent: #D97757;
+    --accent-soft: #3A2A22;
+    --positive: #7FB88A;
+    --positive-soft: #213227;
+    --negative: #E8836B;
+    --negative-soft: #3A2420;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.3), 0 1px 3px rgba(0,0,0,0.25);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.4), 0 2px 6px rgba(0,0,0,0.3);
+    --radius: 12px;
+  }
+
+  body {
+    min-height: 100vh;
+    background: var(--bg);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif;
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---------- Header ---------- */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .header-left { display: flex; align-items: center; gap: 10px; }
+  .logo-mark {
+    width: 30px; height: 30px;
+    border-radius: 8px;
+    background: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-weight: 700; font-size: 14px;
+    flex-shrink: 0;
+  }
+  .logo-title { font-size: 15px; font-weight: 600; letter-spacing: -0.2px; color: var(--text); }
+  .logo-sub { font-size: 11px; color: var(--text-faint); letter-spacing: 0.2px; }
+
+  .tabs { display: flex; gap: 4px; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 3px; }
+  .tab-btn {
+    background: transparent; border: none;
+    color: var(--text-muted);
+    padding: 7px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .tab-btn.active { background: var(--surface); color: var(--text); box-shadow: var(--shadow-sm); font-weight: 600; }
+
+  .view { display: none; }
+  .view.active { display: block; }
+
+  .main {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+  @media (min-width: 860px) {
+    .main-grid.has-result { grid-template-columns: 420px 1fr; }
+  }
+
+  /* ---------- Hero text ---------- */
+  .hero { margin-bottom: 32px; max-width: 560px; }
+  .hero h1 {
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: -0.8px;
+    line-height: 1.15;
+    color: var(--text);
+    margin-bottom: 10px;
+  }
+  .hero .accent-word { color: var(--accent); }
+  .hero p { font-size: 15px; color: var(--text-muted); line-height: 1.5; }
+
+  /* ---------- Cards ---------- */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: var(--shadow-sm);
+  }
+  .card + .card { margin-top: 16px; }
+
+  .card-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* ---------- Stat strip (signature element) ---------- */
+  .stat-strip {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+  .stat-cell {
+    background: var(--surface);
+    padding: 16px 14px;
+  }
+  .stat-cell-label {
+    font-size: 11px; color: var(--text-faint);
+    text-transform: uppercase; letter-spacing: 0.4px;
+    margin-bottom: 6px;
+  }
+  .stat-cell input {
+    width: 100%;
+    border: none;
+    background: transparent;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
+    font-family: inherit;
+    outline: none;
+    padding: 0;
+  }
+  .stat-cell input::placeholder { color: var(--text-faint); font-weight: 600; }
+  .stat-cell-readonly-value { font-size: 20px; font-weight: 700; color: var(--text); }
+
+  /* ---------- Form fields ---------- */
+  .field { margin-bottom: 18px; }
+  .field:last-child { margin-bottom: 0; }
+  .field label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+  .field label .optional { color: var(--text-faint); font-weight: 400; }
+  .field-hint { font-size: 12px; color: var(--text-faint); margin-top: 6px; line-height: 1.4; }
+
+  .row { display: flex; gap: 8px; }
+
+  input[type="number"], input[type="text"], input[type="url"], select, textarea {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    padding: 11px 13px;
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+  input::placeholder, textarea::placeholder { color: var(--text-faint); }
+  textarea { resize: vertical; line-height: 1.5; }
+
+  .unit-btns { display: flex; gap: 6px; flex: 1; }
+  .unit-btn {
+    flex: 1; padding: 11px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-muted);
+    font-size: 13px; font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .unit-btn.active { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+
+  /* ---------- Pills ---------- */
+  .pill-group { display: flex; gap: 6px; flex-wrap: wrap; }
+  .pill {
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .pill:hover { border-color: var(--text-faint); }
+  .pill.active { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+
+  .other-input-wrap { margin-top: 10px; display: none; }
+  .other-input-wrap.visible { display: block; }
+
+  /* ---------- Error ---------- */
+  .error-box {
+    background: var(--negative-soft);
+    border: 1px solid #5C3530;
+    border-radius: 8px;
+    padding: 11px 14px;
+    font-size: 13px;
+    color: var(--negative);
+    margin-bottom: 16px;
+    display: none;
+  }
+  .error-box.visible { display: block; }
+
+  /* ---------- Buttons ---------- */
+  .btn-primary {
+    width: 100%; padding: 13px;
+    background: var(--accent);
+    border: none; border-radius: 8px;
+    color: white;
+    font-size: 14px; font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s;
+  }
+  .btn-primary:hover:not(:disabled) { background: #C2613F; }
+  .btn-primary:disabled { background: var(--border); color: var(--text-faint); cursor: not-allowed; }
+
+  .btn-secondary {
+    width: 100%; padding: 11px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-muted);
+    font-size: 13px; font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .btn-secondary:hover { border-color: var(--text-faint); color: var(--text); }
+  .btn-secondary.accent { border-color: var(--accent); color: var(--accent); }
+  .btn-secondary.accent:hover { background: var(--accent-soft); }
+
+  .btn-row { display: flex; gap: 8px; margin-top: 10px; }
+  .btn-row .btn-secondary { margin-top: 0; }
+
+  .mt-10 { margin-top: 10px; }
+
+  /* ---------- Result panel ---------- */
+  .result-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    box-shadow: var(--shadow-md);
+    display: none;
+  }
+  .result-card.visible { display: block; animation: fadeUp 0.35s ease forwards; }
+
+  .result-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .result-title { font-size: 16px; font-weight: 700; letter-spacing: -0.2px; }
+  .result-sub { font-size: 12px; color: var(--text-faint); }
+
+  .load-bar-wrap {
+    width: 100%; height: 3px;
+    background: var(--border); border-radius: 2px;
+    overflow: hidden; margin-bottom: 24px;
+    display: none;
+  }
+  .load-bar-wrap.active { display: block; }
+  .load-bar { height: 100%; background: var(--accent); border-radius: 2px; width: 40%; animation: loadBar 1.6s ease-in-out infinite; }
+
+  .skeleton { display: none; flex-direction: column; gap: 12px; }
+  .skeleton.active { display: flex; }
+  .skel-line { height: 13px; background: var(--border); border-radius: 4px; animation: pulse 1.4s ease infinite; }
+
+  #resultContent { display: flex; flex-direction: column; gap: 4px; }
+
+  .r-section-head {
+    font-size: 12px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase;
+    color: var(--accent); margin-top: 22px; margin-bottom: 8px;
+  }
+  .r-section-head:first-child { margin-top: 0; }
+  .r-bold { font-size: 14px; font-weight: 600; color: var(--text); margin-top: 4px; margin-bottom: 2px; }
+  .r-bullet { display: flex; gap: 10px; font-size: 14px; color: var(--text-muted); line-height: 1.6; padding: 3px 0; }
+  .r-bullet .dot { color: var(--accent); flex-shrink: 0; font-weight: 700; }
+  .r-para { font-size: 14px; color: var(--text-muted); line-height: 1.65; padding: 2px 0; }
+
+  /* ---------- Numeric prediction / score / chart / goal blocks ---------- */
+  .result-block { margin-bottom: 22px; }
+  .result-block:last-child { margin-bottom: 0; }
+  .result-block .stat-strip { margin-bottom: 0; }
+
+  .score-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .score-card { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+  .score-card-label { font-size: 11px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 6px; }
+  .score-card-value { font-size: 22px; font-weight: 700; }
+  .score-card-value .of100 { font-size: 12px; color: var(--text-faint); font-weight: 500; margin-left: 2px; }
+  .score-bar-track { height: 6px; background: var(--border); border-radius: 4px; overflow: hidden; margin-top: 10px; }
+  .score-bar-fill { height: 100%; border-radius: 4px; }
+
+  .chart-box { border: 1px solid var(--border); border-radius: 10px; padding: 14px 14px 8px; background: var(--bg); }
+  .chart-box canvas { width: 100%; display: block; }
+
+  .goal-box { border: 1px solid var(--accent); background: var(--accent-soft); border-radius: 10px; padding: 14px 16px; font-size: 14px; color: var(--text); line-height: 1.55; font-weight: 500; }
+
+  @keyframes loadBar { 0% { transform: translateX(-120%); } 100% { transform: translateX(350%); } }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
+
+  .footer-note { text-align: center; font-size: 12px; color: var(--text-faint); margin-top: 28px; }
+
+  /* ---------- Saved / Compare view ---------- */
+  .saved-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
+  @media (min-width: 760px) { .saved-grid { grid-template-columns: 1fr 1fr; } }
+  .saved-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; position: relative; box-shadow: var(--shadow-sm); }
+  .saved-card-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; padding-right: 24px; }
+  .saved-card-meta { font-size: 12px; color: var(--text-faint); margin-bottom: 12px; }
+  .saved-card-summary { font-size: 13px; color: var(--text-muted); line-height: 1.55; }
+  .saved-card-delete { position: absolute; top: 16px; right: 16px; background: none; border: none; color: var(--text-faint); cursor: pointer; font-size: 14px; line-height: 1; padding: 4px; }
+  .saved-card-delete:hover { color: var(--negative); }
+  .empty-state { text-align: center; padding: 80px 20px; color: var(--text-faint); font-size: 14px; }
+  .empty-state .big { font-size: 32px; margin-bottom: 12px; display: block; }
+
+  /* ---------- Share card modal ---------- */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(24,24,27,0.5); display: none; align-items: center; justify-content: center; padding: 20px; z-index: 100; }
+  .modal-overlay.visible { display: flex; }
+  .modal-box { background: var(--surface); border-radius: 16px; padding: 20px; max-width: 380px; width: 100%; text-align: center; box-shadow: var(--shadow-md); }
+  #shareCanvas { width: 100%; border-radius: 12px; margin-bottom: 16px; display: block; }
+  .modal-btn-row { display: flex; gap: 8px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="logo-mark">R</div>
+    <div>
+      <div class="logo-title">ReelsCast</div>
+      <div class="logo-sub">Reels growth predictor</div>
+    </div>
+  </div>
+  <div class="tabs">
+    <button class="tab-btn active" id="tabPredict" onclick="switchTab('predict')">Predict</button>
+    <button class="tab-btn" id="tabSaved" onclick="switchTab('saved')">Saved (<span id="savedCount">0</span>)</button>
+  </div>
+</div>
+
+<!-- PREDICT VIEW -->
+<div class="view active" id="viewPredict">
+  <div class="main">
+    <div class="hero">
+      <h1>Will your Reels page<br><span class="accent-word">actually grow?</span></h1>
+      <p>Enter your current numbers and goal. Get a realistic projection, a growth plan, and the mistakes to avoid — built for your platform, niche, and region.</p>
+    </div>
+
+    <div class="main-grid" id="mainGrid">
+
+      <div id="inputPanel">
+
+        <!-- Current stats -->
+        <div class="card-label">📍 Where you are now</div>
+        <div class="stat-strip">
+          <div class="stat-cell">
+            <div class="stat-cell-label">Followers</div>
+            <input type="number" id="currentFollowers" placeholder="0" min="0" />
+          </div>
+          <div class="stat-cell">
+            <div class="stat-cell-label">Avg views / reel</div>
+            <input type="number" id="avgViews" placeholder="0" min="0" />
+          </div>
+          <div class="stat-cell">
+            <div class="stat-cell-label">Posts / week</div>
+            <input type="number" id="postsPerWeek" placeholder="0" min="0" />
+          </div>
+        </div>
+        <div class="field-hint" style="margin-bottom:20px;">
+          New page? Leave at 0 — the prediction adjusts for starting from scratch.
+        </div>
+
+        <div class="card">
+          <div class="card-label">📱 Platform</div>
+          <div class="pill-group" id="platformPills">
+            <button class="pill active" data-val="Facebook Reels">Facebook Reels</button>
+            <button class="pill" data-val="Instagram Reels">Instagram Reels</button>
+            <button class="pill" data-val="TikTok">TikTok</button>
+            <button class="pill" data-val="YouTube Shorts">YouTube Shorts</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-label">🎯 Your niche</div>
+          <div class="pill-group" id="nichePills">
+            <button class="pill active" data-val="AI / transformation videos">AI / Transformation</button>
+            <button class="pill" data-val="Comedy / skits">Comedy / Skits</button>
+            <button class="pill" data-val="Faceless niche page (facts, nostalgia, etc.)">Faceless Niche</button>
+            <button class="pill" data-val="Talking head / personal brand">Talking Head</button>
+            <button class="pill" data-val="Other">Other</button>
+          </div>
+          <div class="other-input-wrap" id="otherNicheWrap">
+            <input type="text" id="otherNiche" placeholder="Describe your niche (required)..." />
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-label">🌍 Audience region</div>
+          <div class="pill-group" id="regionPills">
+            <button class="pill active" data-val="Nigeria/Africa">Nigeria / Africa</button>
+            <button class="pill" data-val="Asia">Asia</button>
+            <button class="pill" data-val="Europe/US">Europe / US</button>
+            <button class="pill" data-val="Mixed">Mixed Global</button>
+          </div>
+
+          <div class="field mt-10" style="margin-bottom:0;">
+            <label>Monetization status</label>
+            <div class="pill-group" id="monetPills">
+              <button class="pill active" data-val="Not yet monetized">Not monetized</button>
+              <button class="pill" data-val="On waitlist">On waitlist</button>
+              <button class="pill" data-val="Already monetized">Already monetized</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-label">📈 Your goal</div>
+          <div class="field">
+            <label>Follower / reach goal</label>
+            <input type="number" id="followerGoal" placeholder="e.g. 50000" min="1" />
+          </div>
+          <div class="field" style="margin-bottom:0;">
+            <label>Time frame</label>
+            <div class="row">
+              <input type="number" id="duration" value="6" min="1" max="60" style="max-width:90px;" />
+              <div class="unit-btns">
+                <button class="unit-btn active" data-unit="months" onclick="setUnit(this)">Months</button>
+                <button class="unit-btn" data-unit="years" onclick="setUnit(this)">Years</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-label">✏️ Anything else <span style="text-transform:none;font-weight:400;color:var(--text-faint);">(optional)</span></div>
+          <textarea id="extraContext" rows="3" maxlength="300" oninput="updateContextCounter()" placeholder="e.g. recurring characters, single-shot photorealistic style, specific page name..."></textarea>
+          <div class="field-hint" style="text-align:right;"><span id="contextCounter">0</span>/300</div>
+        </div>
+
+        <div class="error-box" id="errorBox"></div>
+
+        <button class="btn-primary" id="predictBtn" onclick="handlePredict()">Predict my growth</button>
+        <div class="btn-row" id="postResultBtns" style="display:none;">
+          <button class="btn-secondary accent" onclick="saveCurrentPrediction(this)">Save</button>
+          <button class="btn-secondary accent" onclick="openShareCard()">Share card</button>
+        </div>
+        <button class="btn-secondary mt-10" id="resetBtn" style="display:none;" onclick="handleReset()">New prediction</button>
+      </div>
+
+      <div class="result-card" id="resultPanel">
+        <div class="result-header">
+          <div>
+            <div class="result-title" id="resultTitle">Your growth prediction</div>
+            <div class="result-sub" id="resultMeta"></div>
+          </div>
+        </div>
+
+        <div class="load-bar-wrap" id="loadBar"><div class="load-bar"></div></div>
+
+        <div class="skeleton" id="skeleton">
+          <div class="skel-line" style="width:85%"></div>
+          <div class="skel-line" style="width:65%"></div>
+          <div class="skel-line" style="width:92%"></div>
+          <div class="skel-line" style="width:55%"></div>
+          <div class="skel-line" style="width:78%"></div>
+        </div>
+
+        <div id="resultContent"></div>
+      </div>
+
+    </div>
+
+    <div class="footer-note">Powered by AI · Estimates only, not guarantees · Saved predictions stay on this device; prediction inputs are sent to our server to generate each result</div>
+  </div>
+</div>
+
+<!-- SAVED VIEW -->
+<div class="view" id="viewSaved">
+  <div class="main">
+    <div class="hero">
+      <h1>Your saved<br><span class="accent-word">predictions.</span></h1>
+      <p>Compare niches, platforms, and strategies side by side. Select two to compare.</p>
+    </div>
+    <div id="compareBar" style="display:none; margin-bottom:16px;">
+      <button class="btn-primary" style="width:auto; padding:10px 20px; display:inline-block;" onclick="openCompare()">Compare selected (<span id="compareSelCount">0</span>/2)</button>
+      <button class="btn-secondary" style="width:auto; padding:10px 16px; display:inline-block; margin-left:8px;" onclick="clearCompareSelection()">Clear selection</button>
+    </div>
+    <div id="savedGrid" class="saved-grid"></div>
+  </div>
+</div>
+
+<!-- COMPARE MODAL -->
+<div class="modal-overlay" id="compareModal">
+  <div class="modal-box" style="max-width:760px; text-align:left;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+      <div style="font-size:16px; font-weight:700;">Comparing predictions</div>
+      <button class="btn-secondary" style="width:auto; padding:6px 12px;" onclick="closeCompare()">Close</button>
+    </div>
+    <div id="compareGrid" style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;"></div>
+  </div>
+</div>
+
+<!-- SHARE CARD MODAL -->
+<div class="modal-overlay" id="shareModal">
+  <div class="modal-box">
+    <canvas id="shareCanvas" width="1080" height="1080"></canvas>
+    <div class="modal-btn-row">
+      <button class="btn-secondary" onclick="closeShareCard()">Close</button>
+      <button class="btn-secondary accent" onclick="downloadShareCard()">Download image</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// API key lives server-side now — see netlify/functions/predict.js
+const PREDICT_ENDPOINT = "/.netlify/functions/predict";
+const STORAGE_KEY = "reelscast_predictions";
+
+let selectedUnit = "months";
+let selectedPlatform = "Facebook Reels";
+let selectedNiche = "AI / transformation videos";
+let selectedRegion = "Nigeria/Africa";
+let selectedMonet = "Not yet monetized";
+let lastPrediction = null;
+let compareSelection = [];
+
+// ---------- Tabs ----------
+function switchTab(tab) {
+  document.getElementById('viewPredict').classList.toggle('active', tab === 'predict');
+  document.getElementById('viewSaved').classList.toggle('active', tab === 'saved');
+  document.getElementById('tabPredict').classList.toggle('active', tab === 'predict');
+  document.getElementById('tabSaved').classList.toggle('active', tab === 'saved');
+  if (tab === 'saved') renderSavedGrid();
+}
+
+// ---------- Pills ----------
+function setupPillGroup(groupId, onSelect) {
+  const group = document.getElementById(groupId);
+  group.querySelectorAll('.pill').forEach(btn => {
+    btn.addEventListener('click', () => {
+      group.querySelectorAll('.pill').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      onSelect(btn.dataset.val);
+    });
+  });
+}
+
+setupPillGroup('platformPills', v => selectedPlatform = v);
+setupPillGroup('nichePills', v => {
+  selectedNiche = v;
+  const wrap = document.getElementById('otherNicheWrap');
+  wrap.classList.toggle('visible', v === 'Other');
+  if (v === 'Other') {
+    setTimeout(() => document.getElementById('otherNiche').focus(), 50);
+  }
+});
+setupPillGroup('regionPills', v => selectedRegion = v);
+setupPillGroup('monetPills', v => selectedMonet = v);
+
+function setUnit(btn) {
+  document.querySelectorAll('.unit-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  selectedUnit = btn.dataset.unit;
+}
+
+function updateContextCounter() {
+  const el = document.getElementById('extraContext');
+  document.getElementById('contextCounter').textContent = el.value.length;
+}
+
+// ---------- Errors / loading ----------
+function showError(msg) {
+  const el = document.getElementById('errorBox');
+  el.textContent = msg;
+  el.classList.add('visible');
+}
+function clearError() { document.getElementById('errorBox').classList.remove('visible'); }
+
+function setLoading(on) {
+  const btn = document.getElementById('predictBtn');
+  const lb = document.getElementById('loadBar');
+  const sk = document.getElementById('skeleton');
+  const rp = document.getElementById('resultPanel');
+
+  btn.disabled = on;
+  btn.textContent = on ? 'Analyzing your page…' : 'Predict my growth';
+
+  if (on) {
+    rp.classList.add('visible');
+    lb.classList.add('active');
+    sk.classList.add('active');
+    document.getElementById('resultContent').innerHTML = '';
+    document.getElementById('mainGrid').classList.add('has-result');
+    document.getElementById('postResultBtns').style.display = 'none';
+  } else {
+    lb.classList.remove('active');
+    sk.classList.remove('active');
+  }
+}
+
+// ---------- Formatting helpers ----------
+function formatCurrency(v, currency) {
+  const n = Number(v) || 0;
+  if (!currency || currency === 'USD') return '$' + n.toLocaleString();
+  return currency + ' ' + n.toLocaleString();
+}
+function formatCompact(v) {
+  v = Math.round(v);
+  const abs = Math.abs(v);
+  if (abs >= 1000000) return (v / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+  if (abs >= 1000) return (v / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+  return String(v);
+}
+function scoreColor(v) {
+  if (v >= 70) return 'var(--positive)';
+  if (v >= 40) return 'var(--accent)';
+  return 'var(--negative)';
+}
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str || '';
+  return div.innerHTML;
+}
+
+// ---------- Parsing the AI's structured response ----------
+function parsePredictionJSON(text) {
+  let raw = text.trim();
+  raw = raw.replace(/^```(json)?\s*/i, '').replace(/```\s*$/i, '').trim();
+  const start = raw.indexOf('{');
+  const end = raw.lastIndexOf('}');
+  if (start !== -1 && end !== -1 && end > start) raw = raw.slice(start, end + 1);
+  return JSON.parse(raw);
+}
+
+function clampScore(v) {
+  const n = Number(v);
+  if (isNaN(n)) return 0;
+  return Math.max(0, Math.min(100, Math.round(n)));
+}
+
+function normalizePrediction(d) {
+  d = d || {};
+  const num = (v) => { const n = Number(v); return isNaN(n) ? 0 : n; };
+  const narrative = d.narrative || {};
+  const followers = d.followers || {};
+  const earnings = d.earnings || {};
+  const scores = d.scores || {};
+  const goalCalculator = d.goalCalculator || {};
+
+  return {
+    narrative: {
+      growthEarnings: narrative.growthEarnings || '',
+      keyActions: Array.isArray(narrative.keyActions) ? narrative.keyActions : [],
+      avoid: Array.isArray(narrative.avoid) ? narrative.avoid : [],
+      timeline: narrative.timeline || '',
+      bottomLine: narrative.bottomLine || '',
+    },
+    followers: { low: num(followers.low), avg: num(followers.avg), high: num(followers.high) },
+    earnings: { low: num(earnings.low), avg: num(earnings.avg), high: num(earnings.high), currency: earnings.currency || 'USD' },
+    scores: { viral: clampScore(scores.viral), monetization: clampScore(scores.monetization), growth: clampScore(scores.growth) },
+    monthlyProjection: Array.isArray(d.monthlyProjection)
+      ? d.monthlyProjection.map(p => ({ month: num((p && p.month)), followers: num((p && p.followers)), views: num((p && p.views)) }))
+      : [],
+    goalCalculator: {
+      summary: goalCalculator.summary || '',
+      postsPerWeek: num(goalCalculator.postsPerWeek),
+      avgViewsNeeded: num(goalCalculator.avgViewsNeeded),
+    },
+  };
+}
+
+// ---------- Render result ----------
+function renderResult(pred) {
+  const container = document.getElementById('resultContent');
+  container.innerHTML = '';
+
+  container.appendChild(buildStatBlock('Projected Followers', pred.followers, v => Number(v).toLocaleString()));
+  container.appendChild(buildStatBlock('Projected Earnings', pred.earnings, v => formatCurrency(v, pred.earnings.currency)));
+
+  if (pred.narrative.growthEarnings) {
+    const block = document.createElement('div');
+    block.className = 'result-block';
+    const p = document.createElement('p');
+    p.className = 'r-para';
+    p.textContent = pred.narrative.growthEarnings;
+    block.appendChild(p);
+    container.appendChild(block);
+  }
+
+  container.appendChild(buildScoreBlock(pred.scores));
+
+  if (pred.monthlyProjection && pred.monthlyProjection.length >= 2) {
+    container.appendChild(buildChartBlock(pred.monthlyProjection));
+  }
+
+  if (pred.goalCalculator && pred.goalCalculator.summary) {
+    container.appendChild(buildGoalBlock(pred.goalCalculator));
+  }
+
+  appendNarrativeSection(container, 'What You Should Do', pred.narrative.keyActions, true);
+  appendNarrativeSection(container, 'What To Avoid', pred.narrative.avoid, true);
+  if (pred.narrative.timeline) appendNarrativeSection(container, 'Realistic Timeline', [pred.narrative.timeline], false);
+  if (pred.narrative.bottomLine) appendNarrativeSection(container, 'Bottom Line', [pred.narrative.bottomLine], false);
+}
+
+function buildStatBlock(label, obj, formatter) {
+  const wrap = document.createElement('div');
+  wrap.className = 'result-block';
+
+  const head = document.createElement('div');
+  head.className = 'r-section-head';
+  head.style.marginTop = '0';
+  head.textContent = label;
+  wrap.appendChild(head);
+
+  const strip = document.createElement('div');
+  strip.className = 'stat-strip';
+
+  [['low', 'Low'], ['avg', 'Average'], ['high', 'High']].forEach(pair => {
+    const key = pair[0], lab = pair[1];
+    const cell = document.createElement('div');
+    cell.className = 'stat-cell';
+    const labelEl = document.createElement('div');
+    labelEl.className = 'stat-cell-label';
+    labelEl.textContent = lab;
+    const valEl = document.createElement('div');
+    valEl.className = 'stat-cell-readonly-value';
+    if (key === 'avg') valEl.style.color = 'var(--accent)';
+    valEl.textContent = formatter(obj[key]);
+    cell.appendChild(labelEl);
+    cell.appendChild(valEl);
+    strip.appendChild(cell);
+  });
+
+  wrap.appendChild(strip);
+  return wrap;
+}
+
+function buildScoreBlock(scores) {
+  const wrap = document.createElement('div');
+  wrap.className = 'result-block';
+
+  const head = document.createElement('div');
+  head.className = 'r-section-head';
+  head.style.marginTop = '0';
+  head.textContent = 'Score Breakdown';
+  wrap.appendChild(head);
+
+  const row = document.createElement('div');
+  row.className = 'score-row';
+
+  [['Viral Potential', scores.viral], ['Monetization Potential', scores.monetization], ['Growth Potential', scores.growth]].forEach(pair => {
+    const label = pair[0], val = pair[1];
+    const color = scoreColor(val);
+    const card = document.createElement('div');
+    card.className = 'score-card';
+    card.innerHTML =
+      '<div class="score-card-label">' + escapeHtml(label) + '</div>' +
+      '<div class="score-card-value" style="color:' + color + '">' + val + '<span class="of100">/100</span></div>' +
+      '<div class="score-bar-track"><div class="score-bar-fill" style="width:' + val + '%; background:' + color + ';"></div></div>';
+    row.appendChild(card);
+  });
+
+  wrap.appendChild(row);
+  return wrap;
+}
+
+function buildChartBlock(points) {
+  const wrap = document.createElement('div');
+  wrap.className = 'result-block';
+
+  const head = document.createElement('div');
+  head.className = 'r-section-head';
+  head.style.marginTop = '0';
+  head.textContent = 'Follower Growth Over Time';
+  wrap.appendChild(head);
+
+  const box = document.createElement('div');
+  box.className = 'chart-box';
+  const canvas = document.createElement('canvas');
+  box.appendChild(canvas);
+  wrap.appendChild(box);
+
+  requestAnimationFrame(() => drawGrowthChart(canvas, points));
+
+  return wrap;
+}
+
+function drawGrowthChart(canvas, points) {
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  const w = rect.width || 320;
+  const h = 200;
+
+  canvas.width = w * dpr;
+  canvas.height = h * dpr;
+  canvas.style.height = h + 'px';
+
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, w, h);
+
+  const padL = 46, padR = 10, padT = 14, padB = 26;
+  const plotW = w - padL - padR;
+  const plotH = h - padT - padB;
+
+  const followerVals = points.map(p => p.followers);
+  const maxFollowers = Math.max.apply(null, followerVals.concat([1]));
+  const minFollowers = Math.min.apply(null, followerVals.concat([0]));
+  const range = (maxFollowers - minFollowers) || 1;
+
+  ctx.strokeStyle = '#3A3837';
+  ctx.lineWidth = 1;
+  ctx.fillStyle = '#8A8479';
+  ctx.font = '500 10px -apple-system, sans-serif';
+  ctx.textAlign = 'left';
+  for (let i = 0; i <= 3; i++) {
+    const y = padT + plotH - (plotH * i / 3);
+    ctx.beginPath();
+    ctx.moveTo(padL, y);
+    ctx.lineTo(w - padR, y);
+    ctx.stroke();
+    const val = minFollowers + (range * i / 3);
+    ctx.fillText(formatCompact(val), 2, y + 3);
+  }
+
+  const n = points.length;
+  const xFor = (i) => padL + (plotW * i / (n - 1 || 1));
+  const yFor = (v) => padT + plotH - ((v - minFollowers) / range) * plotH;
+
+  ctx.beginPath();
+  points.forEach((p, i) => {
+    const x = xFor(i), y = yFor(p.followers);
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  });
+  ctx.lineTo(xFor(n - 1), padT + plotH);
+  ctx.lineTo(xFor(0), padT + plotH);
+  ctx.closePath();
+  const grad = ctx.createLinearGradient(0, padT, 0, padT + plotH);
+  grad.addColorStop(0, 'rgba(217,119,87,0.28)');
+  grad.addColorStop(1, 'rgba(217,119,87,0)');
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  ctx.beginPath();
+  points.forEach((p, i) => {
+    const x = xFor(i), y = yFor(p.followers);
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  });
+  ctx.strokeStyle = '#D97757';
+  ctx.lineWidth = 2.5;
+  ctx.lineJoin = 'round';
+  ctx.stroke();
+
+  ctx.font = '500 10px -apple-system, sans-serif';
+  points.forEach((p, i) => {
+    const x = xFor(i), y = yFor(p.followers);
+    ctx.beginPath();
+    ctx.arc(x, y, 3.5, 0, Math.PI * 2);
+    ctx.fillStyle = '#1F1E1D';
+    ctx.fill();
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#D97757';
+    ctx.stroke();
+
+    ctx.fillStyle = '#8A8479';
+    ctx.textAlign = i === 0 ? 'left' : (i === n - 1 ? 'right' : 'center');
+    const label = p.month === 0 ? 'Now' : ('Mo ' + p.month);
+    ctx.fillText(label, x, h - 8);
+  });
+  ctx.textAlign = 'left';
+}
+
+function buildGoalBlock(gc) {
+  const wrap = document.createElement('div');
+  wrap.className = 'result-block';
+
+  const head = document.createElement('div');
+  head.className = 'r-section-head';
+  head.style.marginTop = '0';
+  head.textContent = 'Goal Calculator';
+  wrap.appendChild(head);
+
+  const box = document.createElement('div');
+  box.className = 'goal-box';
+  box.textContent = gc.summary;
+  wrap.appendChild(box);
+
+  return wrap;
+}
+
+function appendNarrativeSection(container, title, items, asBullets) {
+  const validItems = (items || []).filter(Boolean);
+  if (validItems.length === 0) return;
+
+  const head = document.createElement('div');
+  head.className = 'r-section-head';
+  head.textContent = title;
+  container.appendChild(head);
+
+  validItems.forEach(item => {
+    const el = document.createElement('div');
+    if (asBullets) {
+      el.className = 'r-bullet';
+      const dot = document.createElement('span');
+      dot.className = 'dot';
+      dot.textContent = '—';
+      const txt = document.createElement('span');
+      txt.textContent = item;
+      el.appendChild(dot);
+      el.appendChild(txt);
+    } else {
+      el.className = 'r-para';
+      el.textContent = item;
+    }
+    container.appendChild(el);
+  });
+}
+
+function buildHeadline(pred) {
+  return 'Avg ' + Number(pred.followers.avg).toLocaleString() + ' followers · ' + formatCurrency(pred.earnings.avg, pred.earnings.currency) + ' avg earnings';
+}
+
+// ---------- Predict ----------
+async function handlePredict() {
+  clearError();
+
+  const niche = selectedNiche === 'Other' ? document.getElementById('otherNiche').value.trim() : selectedNiche;
+  const currentFollowers = document.getElementById('currentFollowers').value.trim() || "0";
+  const avgViews = document.getElementById('avgViews').value.trim() || "0";
+  const postsPerWeek = document.getElementById('postsPerWeek').value.trim() || "0";
+  const followerGoal = document.getElementById('followerGoal').value.trim();
+  const duration = document.getElementById('duration').value.trim();
+  const extraContext = document.getElementById('extraContext').value.trim();
+
+  if (selectedNiche === 'Other' && !niche) { showError('Please describe your niche.'); return; }
+  if (!followerGoal || isNaN(Number(followerGoal)) || Number(followerGoal) <= 0) {
+    showError('Please enter a valid follower/reach goal.'); return;
+  }
+  if (!duration || isNaN(Number(duration)) || Number(duration) <= 0) {
+    showError('Please enter a valid time frame.'); return;
+  }
+
+  const durationLabel = duration + ' ' + selectedUnit;
+  const totalMonths = Math.max(1, Math.round(Number(duration) * (selectedUnit === 'years' ? 12 : 1)));
+
+  document.getElementById('resultMeta').textContent = selectedPlatform + ' · ' + niche + ' · ' + selectedRegion + ' · ' + durationLabel;
+  document.getElementById('resultTitle').textContent = 'Your growth prediction';
+
+  setLoading(true);
+
+  const prompt = `You are an expert in short-form video growth across Facebook Reels, Instagram Reels, TikTok, and YouTube Shorts, regional CPM/RPM differences, and monetization strategy. A creator wants a realistic, numeric growth and earnings prediction for their page.
+
+Platform: ${selectedPlatform}
+Current page stats (provided directly by the creator):
+- Current Followers: ${currentFollowers}
+- Average Views per Reel/Video: ${avgViews}
+- Posts per Week: ${postsPerWeek}
+
+Their details:
+- Niche / Content Type: ${niche}
+- Target Audience Region: ${selectedRegion}
+- Monetization Status: ${selectedMonet}
+- Follower/Reach Goal: ${followerGoal}
+- Time Frame: ${durationLabel} (${totalMonths} months)
+${extraContext ? '- Additional Context: ' + extraContext : ''}
+
+Use realistic, platform-specific monetization knowledge: Facebook Reels has a region-gated, inconsistent Performance Bonus program; Instagram Reels bonus programs have mostly been phased out in favor of brand deals and affiliate income; TikTok's Creator Rewards Program pays based on watch time and originality with relatively low RPM in Africa/South Asia; YouTube Shorts splits ad revenue across the Shorts feed pool with a low per-view RPM compared to long-form video. Combine this with regional CPM/RPM tiers (Nigeria/Africa and most of Asia are meaningfully lower than Europe/US).
+
+Base the projection on their CURRENT stats (not a from-zero scenario, unless current followers is 0). If their average views look unusually low relative to their follower count (or vice versa), treat that as a red flag and reflect it in the bottom line.
+
+Respond with STRICT JSON ONLY — no markdown formatting, no code fences, no commentary before or after the JSON object. Match this exact schema:
+
+{
+  "narrative": {
+    "growthEarnings": "2-4 sentence paragraph explaining what drives the low/average/high scenarios",
+    "keyActions": ["4 to 6 specific, actionable steps tailored to their current posting frequency, niche, and platform"],
+    "avoid": ["4 to 5 specific mistakes that stall growth or hurt monetization for this niche, platform, and region"],
+    "timeline": "2-4 sentence brief stage-by-stage expectation from their current stats to the goal",
+    "bottomLine": "2-4 sentence honest paragraph on whether the goal is realistic in this time frame, flagging any red flags in their numbers"
+  },
+  "followers": {"low": number, "avg": number, "high": number},
+  "earnings": {"low": number, "avg": number, "high": number, "currency": "USD"},
+  "scores": {"viral": number from 0 to 100, "monetization": number from 0 to 100, "growth": number from 0 to 100},
+  "monthlyProjection": [array of exactly 5 points evenly spaced from month 0 (their current stats) to month ${totalMonths}, each shaped {"month": number, "followers": number, "views": number}],
+  "goalCalculator": {"summary": "one practical sentence like 'To reach 50,000 followers in 6 months you need approximately 4 reels per day averaging 20,000 views.'", "postsPerWeek": number, "avgViewsNeeded": number}
+}
+
+All numeric fields must be plain numbers — no $ signs, no commas, no text. Be realistic, not hype.`;
+
+  try {
+    const response = await fetch(PREDICT_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt }),
+    });
+
+    const data = await response.json().catch(() => null);
+
+    if (!response.ok) {
+      const errMsg = (data && data.error) ? data.error : ('HTTP ' + response.status);
+      throw new Error(errMsg);
+    }
+
+    const rawText = ((data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || '').trim();
+    if (!rawText) throw new Error('No response received.');
+
+    let parsedJson;
+    try {
+      parsedJson = parsePredictionJSON(rawText);
+    } catch (e) {
+      throw new Error('Could not understand the AI response. Please try again.');
+    }
+
+    const pred = normalizePrediction(parsedJson);
+    renderResult(pred);
+
+    lastPrediction = {
+      id: Date.now().toString(),
+      platform: selectedPlatform,
+      niche, region: selectedRegion, monet: selectedMonet,
+      currentFollowers, avgViews, postsPerWeek, followerGoal, durationLabel, extraContext,
+      narrative: pred.narrative,
+      followers: pred.followers,
+      earnings: pred.earnings,
+      scores: pred.scores,
+      monthlyProjection: pred.monthlyProjection,
+      goalCalculator: pred.goalCalculator,
+      headline: buildHeadline(pred),
+      createdAt: new Date().toISOString(),
+    };
+
+    document.getElementById('postResultBtns').style.display = 'flex';
+    document.getElementById('resetBtn').style.display = 'block';
+
+  } catch (err) {
+    let msg = 'Something went wrong. Please try again.';
+    const m = (err && err.message) ? err.message.toLowerCase() : '';
+    if (m.includes('missing') && m.includes('groq_api_key')) {
+      msg = "The server is missing its Groq API key. Set GROQ_API_KEY in your Netlify site's environment variables.";
+    } else if (m.includes('401') || m.includes('invalid') || m.includes('unauthorized')) {
+      msg = "The server's API key is invalid or expired.";
+    } else if (m.includes('429') || m.includes('rate limit')) {
+      msg = 'Free tier rate limit reached. Wait a minute and try again.';
+    } else if (m.includes('failed to fetch') || m.includes('network')) {
+      msg = "Network error, or this function isn't reachable. If you're testing locally, run the site with 'netlify dev' rather than opening the HTML file directly.";
+    }
+    showError(msg);
+    document.getElementById('resultPanel').classList.remove('visible');
+    document.getElementById('mainGrid').classList.remove('has-result');
+  } finally {
+    setLoading(false);
+  }
+}
+
+function handleReset() {
+  document.getElementById('currentFollowers').value = '';
+  document.getElementById('avgViews').value = '';
+  document.getElementById('postsPerWeek').value = '';
+  document.getElementById('followerGoal').value = '';
+  document.getElementById('duration').value = '6';
+  document.getElementById('extraContext').value = '';
+  document.getElementById('contextCounter').textContent = '0';
+  document.getElementById('otherNiche').value = '';
+  document.getElementById('resultPanel').classList.remove('visible');
+  document.getElementById('mainGrid').classList.remove('has-result');
+  document.getElementById('resultContent').innerHTML = '';
+  document.getElementById('resetBtn').style.display = 'none';
+  document.getElementById('postResultBtns').style.display = 'none';
+  clearError();
+  selectedUnit = 'months';
+  document.querySelectorAll('#viewPredict .unit-btn').forEach((b, i) => b.classList.toggle('active', i === 0));
+  selectedPlatform = 'Facebook Reels';
+  document.querySelectorAll('#platformPills .pill').forEach((b, i) => b.classList.toggle('active', i === 0));
+  lastPrediction = null;
+}
+
+// ---------- Save / Compare ----------
+function getSaved() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+  catch (e) { return []; }
+}
+function setSaved(list) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+    document.getElementById('savedCount').textContent = list.length;
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+function saveCurrentPrediction(btn) {
+  if (!lastPrediction) return;
+  const list = getSaved();
+  list.unshift(lastPrediction);
+
+  const MAX_SAVED = 30;
+  if (list.length > MAX_SAVED) list.length = MAX_SAVED;
+
+  const ok = setSaved(list);
+  const original = btn.textContent;
+
+  if (ok) {
+    btn.textContent = 'Saved ✓';
+  } else {
+    btn.textContent = 'Save failed';
+  }
+  setTimeout(() => { btn.textContent = original; }, 1500);
+}
+
+function renderSavedGrid() {
+  const list = getSaved();
+  const grid = document.getElementById('savedGrid');
+  grid.innerHTML = '';
+
+  document.getElementById('compareBar').style.display = list.length >= 2 ? 'block' : 'none';
+  updateCompareCount();
+
+  if (list.length === 0) {
+    grid.innerHTML = '<div class="empty-state"><span class="big">—</span>No saved predictions yet.<br>Run a prediction and tap Save to compare it here.</div>';
+    return;
+  }
+
+  list.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'saved-card';
+    const date = new Date(item.createdAt);
+    const checked = compareSelection.includes(item.id) ? 'checked' : '';
+    const metaParts = [item.platform, item.region, item.durationLabel].filter(Boolean);
+    card.innerHTML = `
+      <button class="saved-card-delete" onclick="deleteSaved('${item.id}')">✕</button>
+      <label style="display:flex; align-items:flex-start; gap:10px; cursor:pointer;">
+        <input type="checkbox" ${checked} onchange="toggleCompareSelect('${item.id}', this.checked)" style="margin-top:4px; width:auto;" />
+        <div style="flex:1;">
+          <div class="saved-card-title">${escapeHtml(item.niche)}</div>
+          <div class="saved-card-meta">${metaParts.map(escapeHtml).join(' · ')} · ${date.toLocaleDateString()}</div>
+          <div class="saved-card-summary">${escapeHtml(item.headline)}</div>
+        </div>
+      </label>
+      <button class="btn-secondary" style="width:auto; padding:6px 14px; margin-top:12px; font-size:12px;" onclick="loadSavedIntoForm('${item.id}')">Edit & re-run</button>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function toggleCompareSelect(id, checked) {
+  if (checked) {
+    if (compareSelection.length >= 2) {
+      compareSelection.shift();
+    }
+    compareSelection.push(id);
+  } else {
+    compareSelection = compareSelection.filter(x => x !== id);
+  }
+  updateCompareCount();
+  renderSavedGrid();
+}
+
+function updateCompareCount() {
+  const el = document.getElementById('compareSelCount');
+  if (el) el.textContent = compareSelection.length;
+}
+
+function clearCompareSelection() {
+  compareSelection = [];
+  renderSavedGrid();
+}
+
+function fmtRange(obj, currency) {
+  if (!obj) return '—';
+  const fmt = v => currency ? formatCurrency(v, currency) : Number(v).toLocaleString();
+  return fmt(obj.low) + ' – ' + fmt(obj.avg) + ' – ' + fmt(obj.high);
+}
+
+function openCompare() {
+  if (compareSelection.length !== 2) return;
+  const list = getSaved();
+  const items = compareSelection.map(id => list.find(p => p.id === id)).filter(Boolean);
+  if (items.length !== 2) return;
+
+  const grid = document.getElementById('compareGrid');
+  grid.innerHTML = items.map(item => `
+    <div style="border:1px solid var(--border); border-radius:10px; padding:16px;">
+      <div style="font-size:15px; font-weight:700; margin-bottom:4px;">${escapeHtml(item.niche)}</div>
+      <div style="font-size:12px; color:var(--text-faint); margin-bottom:12px;">${[item.platform, item.region, item.durationLabel].filter(Boolean).map(escapeHtml).join(' · ')}</div>
+
+      <div style="font-size:12px; color:var(--text-faint); text-transform:uppercase; letter-spacing:0.4px; margin-bottom:4px;">Starting point</div>
+      <div style="font-size:13px; color:var(--text-muted); margin-bottom:12px;">${Number(item.currentFollowers||0).toLocaleString()} followers · ${Number(item.avgViews||0).toLocaleString()} avg views</div>
+
+      <div style="font-size:12px; color:var(--text-faint); text-transform:uppercase; letter-spacing:0.4px; margin-bottom:4px;">Projected followers (low – avg – high)</div>
+      <div style="font-size:13px; color:var(--text-muted); margin-bottom:12px;">${fmtRange(item.followers)}</div>
+
+      <div style="font-size:12px; color:var(--text-faint); text-transform:uppercase; letter-spacing:0.4px; margin-bottom:4px;">Projected earnings (low – avg – high)</div>
+      <div style="font-size:13px; color:var(--positive); font-weight:600; margin-bottom:12px;">${fmtRange(item.earnings, item.earnings && item.earnings.currency)}</div>
+
+      <div style="font-size:12px; color:var(--text-faint); text-transform:uppercase; letter-spacing:0.4px; margin-bottom:4px;">Scores</div>
+      <div style="font-size:13px; color:var(--text-muted);">Viral ${item.scores ? item.scores.viral : '—'} · Monetization ${item.scores ? item.scores.monetization : '—'} · Growth ${item.scores ? item.scores.growth : '—'}</div>
+    </div>
+  `).join('');
+
+  document.getElementById('compareModal').classList.add('visible');
+}
+function closeCompare() {
+  document.getElementById('compareModal').classList.remove('visible');
+}
+
+function loadSavedIntoForm(id) {
+  const list = getSaved();
+  const item = list.find(p => p.id === id);
+  if (!item) return;
+
+  document.getElementById('currentFollowers').value = item.currentFollowers || '';
+  document.getElementById('avgViews').value = item.avgViews || '';
+  document.getElementById('postsPerWeek').value = item.postsPerWeek || '';
+  document.getElementById('followerGoal').value = item.followerGoal || '';
+  document.getElementById('extraContext').value = item.extraContext || '';
+  document.getElementById('contextCounter').textContent = (item.extraContext || '').length;
+
+  // Duration label was stored combined e.g. "6 months" — split it back out
+  const parts = (item.durationLabel || '').split(' ');
+  if (parts.length === 2) {
+    document.getElementById('duration').value = parts[0];
+    selectedUnit = parts[1];
+    document.querySelectorAll('#viewPredict .unit-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.unit === selectedUnit);
+    });
+  }
+
+  // Platform pill
+  selectedPlatform = item.platform || 'Facebook Reels';
+  document.querySelectorAll('#platformPills .pill').forEach(b => {
+    b.classList.toggle('active', b.dataset.val === selectedPlatform);
+  });
+
+  // Region pill
+  selectedRegion = item.region;
+  document.querySelectorAll('#regionPills .pill').forEach(b => {
+    b.classList.toggle('active', b.dataset.val === item.region);
+  });
+
+  // Monetization pill
+  selectedMonet = item.monet;
+  document.querySelectorAll('#monetPills .pill').forEach(b => {
+    b.classList.toggle('active', b.dataset.val === item.monet);
+  });
+
+  // Niche pill — check if it matches a known pill, else set to Other
+  const nichePillBtns = document.querySelectorAll('#nichePills .pill');
+  let matched = false;
+  nichePillBtns.forEach(b => {
+    const isMatch = b.dataset.val === item.niche;
+    b.classList.toggle('active', isMatch);
+    if (isMatch) matched = true;
+  });
+  if (!matched) {
+    nichePillBtns.forEach(b => b.classList.toggle('active', b.dataset.val === 'Other'));
+    selectedNiche = 'Other';
+    document.getElementById('otherNicheWrap').classList.add('visible');
+    document.getElementById('otherNiche').value = item.niche;
+  } else {
+    selectedNiche = item.niche;
+    document.getElementById('otherNicheWrap').classList.remove('visible');
+  }
+
+  switchTab('predict');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function deleteSaved(id) {
+  const list = getSaved().filter(p => p.id !== id);
+  setSaved(list);
+  renderSavedGrid();
+}
+
+// ---------- Share card ----------
+function openShareCard() {
+  if (!lastPrediction) return;
+  drawShareCard(lastPrediction);
+  document.getElementById('shareModal').classList.add('visible');
+}
+function closeShareCard() { document.getElementById('shareModal').classList.remove('visible'); }
+function downloadShareCard() {
+  const canvas = document.getElementById('shareCanvas');
+  const link = document.createElement('a');
+  link.download = 'reelscast-prediction.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+  const words = text.split(' ');
+  let line = '';
+  let curY = y;
+  for (let n = 0; n < words.length; n++) {
+    const testLine = line + words[n] + ' ';
+    if (ctx.measureText(testLine).width > maxWidth && n > 0) {
+      ctx.fillText(line, x, curY);
+      line = words[n] + ' ';
+      curY += lineHeight;
+    } else {
+      line = testLine;
+    }
+  }
+  ctx.fillText(line, x, curY);
+  return curY;
+}
+
+function drawShareCard(pred) {
+  const canvas = document.getElementById('shareCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  ctx.fillStyle = '#1F1E1D';
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.fillStyle = '#D97757';
+  ctx.fillRect(0, 0, W, 10);
+
+  ctx.fillStyle = '#8A8479';
+  ctx.font = '600 26px -apple-system, sans-serif';
+  ctx.fillText('REELSCAST', 64, 90);
+
+  ctx.fillStyle = '#F5F1EC';
+  ctx.font = '800 54px -apple-system, sans-serif';
+  const titleY = wrapText(ctx, pred.niche, 64, 190, W - 128, 62);
+
+  ctx.fillStyle = '#D97757';
+  ctx.font = '600 24px -apple-system, sans-serif';
+  ctx.fillText((pred.platform ? pred.platform + ' · ' : '') + pred.region + ' · ' + pred.durationLabel, 64, titleY + 50);
+
+  ctx.strokeStyle = '#3A3837';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(64, titleY + 88);
+  ctx.lineTo(W - 64, titleY + 88);
+  ctx.stroke();
+
+  ctx.fillStyle = '#8A8479';
+  ctx.font = '600 20px -apple-system, sans-serif';
+  ctx.fillText('PROJECTED FOLLOWERS · LOW / AVG / HIGH', 64, titleY + 138);
+
+  ctx.fillStyle = '#7FB88A';
+  ctx.font = '800 34px -apple-system, sans-serif';
+  const fLine = pred.followers
+    ? (Number(pred.followers.low).toLocaleString() + ' / ' + Number(pred.followers.avg).toLocaleString() + ' / ' + Number(pred.followers.high).toLocaleString())
+    : '—';
+  ctx.fillText(fLine, 64, titleY + 180);
+
+  ctx.fillStyle = '#8A8479';
+  ctx.font = '600 20px -apple-system, sans-serif';
+  ctx.fillText('PROJECTED EARNINGS · LOW / AVG / HIGH', 64, titleY + 232);
+
+  ctx.fillStyle = '#7FB88A';
+  ctx.font = '800 34px -apple-system, sans-serif';
+  const eLine = pred.earnings
+    ? (formatCurrency(pred.earnings.low, pred.earnings.currency) + ' / ' + formatCurrency(pred.earnings.avg, pred.earnings.currency) + ' / ' + formatCurrency(pred.earnings.high, pred.earnings.currency))
+    : '—';
+  ctx.fillText(eLine, 64, titleY + 274);
+
+  ctx.fillStyle = '#B8B2AA';
+  ctx.font = '600 22px -apple-system, sans-serif';
+  const scoreLine = pred.scores
+    ? ('Viral ' + pred.scores.viral + '/100 · Monetization ' + pred.scores.monetization + '/100 · Growth ' + pred.scores.growth + '/100')
+    : '';
+  wrapText(ctx, scoreLine, 64, titleY + 330, W - 128, 30);
+
+  ctx.fillStyle = '#8A8479';
+  ctx.font = '500 18px -apple-system, sans-serif';
+  ctx.fillText('AI-generated estimate · Made with ReelsCast', 64, H - 50);
+}
+
+// ---------- Init ----------
+setSaved(getSaved());
+</script>
+
+</body>
+</html>
